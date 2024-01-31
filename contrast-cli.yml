@@ -1,0 +1,21 @@
+inputs:
+  - name: src
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: node
+    tag: 20-alpine
+caches:
+  - path: /tmp/npmcache
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    npm config set cache /tmp/npmcache -g 
+    npm install -g @contrast/contrast
+    ls -la
+    contrast --version
+    contrast auth --api-key ((contrast-cli-creds.api_key)) --authorization ((contrast-cli-creds.authorization)) --host ((contrast-cli-creds.url)) --organization-id ((contrast-cli-creds.org_uuid))
+    contrast audit -f src --track
