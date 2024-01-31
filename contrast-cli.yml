@@ -2,6 +2,8 @@ params:
   PROJECT_NAME:
 inputs:
   - name: src
+outputs:
+  - name: contrast-output
 platform: linux
 image_resource:
   type: registry-image
@@ -20,4 +22,5 @@ run:
       ls -la
       contrast --version
       contrast auth --api-key ((contrast-cli-creds.api_key)) --authorization ((contrast-cli-creds.authorization)) --host ((contrast-cli-creds.url)) --organization-id ((contrast-cli-creds.org_uuid))
-      contrast audit -f src --track --name ((PROJECT_NAME))
+      contrast audit -f src --track --name ((PROJECT_NAME)) --save 
+      mv *-sbom-CYCLONEDX.json contrast-output
