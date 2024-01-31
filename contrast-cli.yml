@@ -1,3 +1,5 @@
+params:
+  PROJECT_NAME:
 inputs:
   - name: src
 platform: linux
