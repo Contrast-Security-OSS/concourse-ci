@@ -26,4 +26,5 @@ run:
       mv *-sbom-CYCLONEDX.json contrast-output
       apk add zip
       zip -r src.zip src
-      contrast scan -n ((CONTRAST_PROJECT_NAME)) -f src.zip
+      contrast scan -n ((CONTRAST_PROJECT_NAME)) -f src.zip --save
+      mv results.sarif contrast-output
