@@ -1,0 +1,24 @@
+params:
+  CONTRAST_PROJECT_NAME:
+inputs:
+  - name: src
+outputs:
+  - name: contrast-output
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: eclipse-temurin
+    tag: 21-jre-alpine
+caches:
+  - path: /tmp/scancache
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    apk add curl trurl unzip
+    curl -H 'Api-Key: ((contrast-cli-creds.api_key))' -H 'Authorization: ((contrast-cli-creds.authorization))' -Lo contrast-local-scanner.zip $(trurl ((contrast-cli-creds.url)) --set scheme=https --set path=/Contrast/api/sast/organizations/((contrast-cli-creds.org_uuid))/release-artifacts/local-scanner/latest --append query=download=true)
+    unzip contrast-local-scanner.zip
+    export CONTRAST__API__URL=$(trurl ((contrast-cli-creds.url)) --set scheme=https --set path=/Contrast/api/sast/) CONTRAST__API__USER_NAME=((contrast-cli-creds.username)) CONTRAST__API__API_KEY=((contrast-cli-creds.api_key)) CONTRAST__API__SERVICE_KEY=((contrast-cli-creds.service_key)) CONTRAST__API__ORGANIZATION=((contrast-cli-creds.org_uuid))
+    java -jar sast-local-scan-runner-*.jar src -p ((CONTRAST_PROJECT_NAME)) -l $(date -Iseconds) -o contrast-output/results.sarif
