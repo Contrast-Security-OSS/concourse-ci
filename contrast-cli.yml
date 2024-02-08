@@ -1,5 +1,6 @@
 params:
   CONTRAST_PROJECT_NAME:
+  CONTRAST_UPLOAD_SOURCE_SAST_SCAN: "false"
 inputs:
   - name: src
 outputs:
@@ -24,6 +25,7 @@ run:
       contrast auth --api-key ((contrast-cli-creds.api_key)) --authorization ((contrast-cli-creds.authorization)) --host ((contrast-cli-creds.url)) --organization-id ((contrast-cli-creds.org_uuid))
       contrast audit -f src --track --name ((CONTRAST_PROJECT_NAME)) --save 
       mv *-sbom-CYCLONEDX.json contrast-output
+      test true = ((CONTRAST_UPLOAD_SOURCE_SAST_SCAN)) || { echo "Not proceeding with source upload to Contrast Scan. Local scan task should be used." && exit; }
       apk add zip
       zip -r src.zip src
       contrast scan -n ((CONTRAST_PROJECT_NAME)) -f src.zip --save
