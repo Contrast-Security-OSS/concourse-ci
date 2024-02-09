@@ -1,0 +1,40 @@
+name: Run linter
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+  workflow_dispatch:
+
+env:
+  CACHE_VERSION: 1
+  DEFAULT_PYTHON: "3.12"
+  PRE_COMMIT_CACHE: ~/.cache/pre-commit
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+          cache-dependency-path: requirements-dev.txt
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >-
+            ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Install pre-commit dependencies
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: pre-commit install-hooks
+      - name: Run pre-commit
+        run: pre-commit run --hook-stage manual --all-files --show-diff-on-failure
