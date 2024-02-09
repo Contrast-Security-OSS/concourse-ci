@@ -1,0 +1,32 @@
+jobs:
+  - name: contrast
+    plan:
+      - get: repo
+      - get: contrast
+      # In parallel, run the Contrast CLI for SCA audit only, and the local scanner for Contrast Scan.
+      - in_parallel:
+          - task: run-contrast-sca-audit
+            input_mapping:
+              src: repo
+            file: contrast/contrast/contrast-cli.yml
+            vars:
+              CONTRAST_PROJECT_NAME: demo-nodegoat
+              # Use the Contrast CLI task to do contrast audit only, we'll use the local scanner for SAST.
+              # If you are happy to upload the repo folder to Contrast, set the below option to true, and remove the next task.
+              CONTRAST_UPLOAD_SOURCE_SAST_SCAN: "false"
+          - task: run-contrast-local-scanner
+            input_mapping:
+              src: repo
+            file: contrast/contrast/contrast-local-scanner.yml
+            vars:
+              CONTRAST_PROJECT_NAME: demo-nodegoat
+
+resources:
+  - name: contrast
+    type: git
+    source:
+      uri: https://github.com/Contrast-Security-OSS/concourse-ci.git
+  - name: repo
+    type: git
+    source:
+      uri: https://github.com/Contrast-Security-OSS/demo-nodegoat
